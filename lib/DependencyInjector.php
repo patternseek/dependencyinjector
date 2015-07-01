@@ -23,12 +23,40 @@ class DependencyInjector
 {
 
     /**
+     * @var DependencyInjector
+     */
+    private static $singleton;
+
+
+    /**
      * @var Container
      */
     private $container;
 
-    public function __construct( Container $container ){
+    /**
+     * @param Container $container
+     */
+    private function __construct( Container $container ){
         $this->container = $container;
+    }
+
+    /**
+     * @return DependencyInjector
+     * @throws \Exception
+     */
+    public static function instance(){
+        if( ! isset( self::$singleton->container ) ){
+            throw new \Exception( "Can't access DependencyInjector singleton before it is initialised via DependencyInjector::init()" );
+        }
+        return self::$singleton;
+    }
+
+    /**
+     * @param Container $container
+     */
+    public static function init( Container $container ){
+        $di = new DependencyInjector( $container );
+        self::$singleton = $di;
     }
 
     /**
@@ -37,7 +65,7 @@ class DependencyInjector
      * @param $methodName
      * @return bool Whether the method was found
      */
-    public function injectInto( $object, $methodName ){
+    public function injectIntoMethod( $object, $methodName = "injectDependencies" ){
         $ref = new \ReflectionClass($object);
         try{
             $refMethod = $ref->getMethod( $methodName );
@@ -55,6 +83,7 @@ class DependencyInjector
             }
         }
         return $refMethod->invoke( $object, ... $toInject );
-    } 
+    }
+
 
 }
