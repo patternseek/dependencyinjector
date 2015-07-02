@@ -63,7 +63,7 @@ class DependencyInjector
      * Inject dependencies from, or including, the Pimple container, into a given method on a given object
      * @param $object
      * @param $methodName
-     * @return bool Whether the method was found
+     * @return mixed The method's return value
      */
     public function injectIntoMethod( $object, $methodName = "injectDependencies" ){
         $ref = new \ReflectionClass($object);
@@ -85,5 +85,36 @@ class DependencyInjector
         return $refMethod->invoke( $object, ... $toInject );
     }
 
+    /**
+     * Inject dependencies from, or including, the Pimple container, into a a given class's constructor
+     * Optionally providing a number of arguments to the constructor to prepend.
+     *
+     * @param $className
+     * @param array $toInject
+     * @return bool Whether the method was found
+     */
+    public function injectIntoConstructor( $className, array $toInject=[] ){
+        $ref = new \ReflectionClass($className);
+        try{
+            $constr = $ref->getConstructor();
+        }catch( ReflectionException  $e ){
+            return null;
+        }
+
+        $numToSkip = count($toInject);
+        foreach ($constr->getParameters() as $p) {
+            if( $numToSkip > 0 ){
+                $numToSkip--;
+                continue;
+            }
+            $className = $p->getClass()->name;
+            if( $className === "Pimple\\Container" ){
+                $toInject[] = $this->container;
+            }else{
+                $toInject[] = $this->container[ $className ];
+            }
+        }
+        return new $className( ... $toInject );
+    }
 
 }
