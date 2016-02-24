@@ -89,7 +89,7 @@ class DependencyInjector
      * Inject dependencies from, or including, the Pimple container, into a a given class's constructor
      * Optionally providing a number of arguments to the constructor to prepend.
      *
-     * @param $classToInjectName
+     * @param string $classToBuildName
      * @param array $toInject
      * @return bool Whether the method was found
      */
